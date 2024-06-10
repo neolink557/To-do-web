@@ -2,17 +2,20 @@
   <div class="app-container">
     <Header />
     <Home />
+    <DD />
   </div>
 </template>
 
 <script>
 import Header from '@/components/HeaderComponent.vue';
 import Home from '@/components/HomePage.vue';
+import DD from '@/components/DropdownComponent.vue';
 
 export default {
   components: {
     Home,
-    Header
+    Header,
+    DD
   }
 }
 </script>
