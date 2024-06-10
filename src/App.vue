@@ -1,11 +1,12 @@
 <template>
-  <div class="app-container">
-    <Header />
-    <Home />
+  <div>
+    <Header></Header>
+    <Home></Home>
   </div>
 </template>
 
 <script>
+// Importa los componentes utilizando la sintaxis de exportación por defecto
 import Header from '@/components/HeaderComponent.vue';
 import Home from '@/components/HomePage.vue';
 

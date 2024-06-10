@@ -36,10 +36,19 @@
         </div>
       </div>
     </header>
+    <div v-if="isMenuOpen">
+      <SideBarComponent />
+    </div>
   </template>
   
   <script>
+
+  import SideBarComponent from './SideBarComponent.vue';
+
   export default {
+    components: {
+      SideBarComponent
+    },
     data() {
       return {
         searchQuery: "",
