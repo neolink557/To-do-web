@@ -35,7 +35,7 @@ export default {
     // Add event listener to detect clicks outside the card
     document.addEventListener('click', this.handleClickOutside);
   },
-  beforeDestroy() {
+  beforeUnmount() {
     // Remove event listener when component is destroyed
     document.removeEventListener('click', this.handleClickOutside);
   }
@@ -82,6 +82,18 @@ export default {
   overflow: hidden; /* Hide scroll bars */
   font: 1em sans-serif;
   min-height: 50px; /* Minimum height */
+}
+
+.title-input:disabled,
+.description-textarea:disabled {
+  background-color: transparent; /* Set background to transparent */
+  color: inherit; /* Inherit text color */
+  cursor: default; /* Use default cursor */
+  user-select: none; /* Disable user selection */
+  -webkit-user-select: none; /* Disable user selection for webkit browsers */
+  -moz-user-select: none; /* Disable user selection for Firefox */
+  -ms-user-select: none; /* Disable user selection for IE/Edge */
+  pointer-events: none; /* Disable pointer events */
 }
 </style>
 
