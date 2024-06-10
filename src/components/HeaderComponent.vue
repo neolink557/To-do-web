@@ -1,5 +1,5 @@
 <template>
-    <header class="header">
+    <header class="header" >
       <div class="header-content">
         <div class="icon-container" @click="toggleMenu">
           <transition name="fade" mode="out-in">
@@ -7,7 +7,7 @@
               v-if="!isMenuOpen"
               src="@/assets/opened-hambureguer-menu-icon.svg"
               alt="Menu" 
-              class="menu-icon"
+              class="menu-icon" 
             />
             <img
               v-else
@@ -60,6 +60,10 @@
   
   <style scoped>
   .title {
+    webkit-user-select: none; /* Chrome, Safari, and Opera */
+            -moz-user-select: none;    /* Firefox */
+            -ms-user-select: none;     /* Internet Explorer and Edge */
+            user-select: none;      
     font: 1em sans-serif;
     padding-left: 1%;
   }
