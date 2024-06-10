@@ -1,7 +1,8 @@
 <template>
-  <div>
+  <div class="app-container">
     <Header></Header>
     <Home></Home>
+    <DD></DD>
   </div>
 </template>
 
@@ -9,11 +10,13 @@
 // Importa los componentes utilizando la sintaxis de exportación por defecto
 import Header from '@/components/HeaderComponent.vue';
 import Home from '@/components/HomePage.vue';
+import DD from '@/components/DropdownComponent.vue';
 
 export default {
   components: {
     Home,
-    Header
+    Header,
+    DD
   }
 }
 </script>
