@@ -45,9 +45,11 @@
     position: absolute;
     top: 100%;
     left: 0;
+    margin: 10px;
     z-index: 1000;
     background-color: #fff;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
     display: none;
   }
   
@@ -56,8 +58,9 @@
   }
   
   .dropdown-menu div {
-    padding: 10px;
+    padding: 15px;
     cursor: pointer;
+    font: 1em sans-serif;
   }
   
   .dropdown-menu div:hover {
