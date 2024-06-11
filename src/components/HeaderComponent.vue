@@ -44,7 +44,7 @@
     data() {
       return {
         searchQuery: "",
-        isMenuOpen: false,
+        isMenuOpen: true,
       };
     },
     methods: {
