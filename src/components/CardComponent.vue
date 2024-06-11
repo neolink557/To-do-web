@@ -19,7 +19,8 @@
           <div v-for="tag in tags" :key="tag.name" class="tag" @click="toggleTagSelection(tag)">
             <span :style="{ backgroundColor: tag.color }" class="tag-circle"></span>
             {{ tag.name }}
-            <span v-if="isSelected(tag)" class="selected-indicator">✓</span>
+            <span class="selected-indicator" v-if="isSelected(tag)">✓</span>
+            <button class="remove-tag-button" @click.stop="removeTag(tag)">X</button>
           </div>
         </div>
         <div class="tag-input">
@@ -36,6 +37,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 import chroma from 'chroma-js';
@@ -68,24 +70,23 @@ export default {
       textarea.style.height = `${textarea.scrollHeight}px`;
     },
     toggleMenu() {
-      this.isEnabled = TextTrackCueList
+      this.isEnabled = !this.isEnabled;
       this.$refs.card.querySelector('.title-input').disabled = !this.isEnabled;
       this.$refs.card.querySelector('.description-textarea').disabled = !this.isEnabled;
       this.isVisible = this.$refs.card.querySelector('.title-input').disabled;
+      this.dropdowButtonVisible = !this.selectedTags.length > 0;
     },
     handleClickOutside(event) {
       if (this.$refs.card && !this.$refs.card.contains(event.target)) {
         this.$refs.card.querySelector('.title-input').disabled = !this.isEnabled;
         this.$refs.card.querySelector('.description-textarea').disabled = !this.isEnabled;
-        this.isEnabled = false
-        this.isVisible = this.$refs.card.querySelector('.title-input').disabled
-        this.dropdownVisible = false
+        this.isEnabled = false;
+        this.isVisible = this.$refs.card.querySelector('.title-input').disabled;
+        this.dropdownVisible = false;
       }
     },
     toggleDropdown() {
-      if (!this.isVisible) {
         this.dropdownVisible = !this.dropdownVisible;
-      }
     },
     addTag() {
       if (this.newTagName.trim() !== '') {
@@ -99,7 +100,22 @@ export default {
           this.scrollToBottom();
         });
       }
-      this.dropdowButtonVisible = !this.selectedTags.length > 0
+      this.dropdowButtonVisible = !this.selectedTags.length > 0;
+    },
+    removeTag(tag) {
+      const index = this.tags.indexOf(tag);
+      if (index > -1) {
+        this.tags.splice(index, 1);
+      }
+      const indexSelected = this.selectedTags.indexOf(tag);
+      if (indexSelected > -1) {
+        this.selectedTags.splice(indexSelected, 1);
+      }
+      localStorage.setItem('tags', JSON.stringify(this.tags)); // Save tags to localStorage
+      this.$nextTick(() => {
+        this.scrollToBottom();
+      });
+      this.dropdowButtonVisible = !this.selectedTags.length > 0;
     },
     toggleTagSelection(tag) {
       const index = this.selectedTags.indexOf(tag);
@@ -108,7 +124,7 @@ export default {
       } else {
         this.selectedTags.push(tag); // Select the tag
       }
-      this.dropdowButtonVisible = !this.selectedTags.length > 0
+      this.dropdowButtonVisible = !this.tags.length > 0;
     },
     isSelected(tag) {
       return this.selectedTags.includes(tag);
@@ -299,6 +315,15 @@ export default {
   font-weight: bold;
 }
 
+.remove-tag-button {
+  margin-left: auto; /* Pushes the button to the end */
+  padding: 2px 5px;
+  background: none;
+  color: gray;
+  border: none;
+  cursor: pointer;
+}
+
 .title-input:disabled,
 .description-textarea:disabled {
   background-color: transparent; /* Set background to transparent */
@@ -311,3 +336,4 @@ export default {
   pointer-events: none;
 }
 </style>
+
