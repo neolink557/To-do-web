@@ -240,4 +240,15 @@ export default {
   color: green;
   font-weight: bold;
 }
+.title-input:disabled,
+.description-textarea:disabled {
+  background-color: transparent; /* Set background to transparent */
+  color: inherit; /* Inherit text color */
+  cursor: default; /* Use default cursor */
+  user-select: none; /* Disable user selection */
+  -webkit-user-select: none; /* Disable user selection for webkit browsers */
+  -moz-user-select: none; /* Disable user selection for Firefox */
+  -ms-user-select: none; /* Disable user selection for IE/Edge */
+  pointer-events: none; 
+}
 </style>

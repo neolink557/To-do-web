@@ -1,6 +1,6 @@
 <!-- SideBarComponent.vue -->
 <template>
-    <div class="sidebar">
+    <div v-if = "isOpen"  class="sidebar" :class="{'sidebar--toggled': !isOpen}">
       <!-- Mostrar tags existentes -->
       <div v-for="tag in tags" :key="tag.name" class="tag">
         <span class="tag-circle" :style="{ backgroundColor: tag.color }"></span>
@@ -13,11 +13,17 @@
   export default {
     data() {
       return {
-        tags: []
+        tags: [],
+        isOpen: false
       };
     },
     created() {
       this.loadTags();
+    },
+    mounted() {
+      this.emitter.on("toggle-sidebar", isOpen => {
+      this.isOpen = isOpen;
+    });
     },
     methods: {
       loadTags() {
@@ -31,13 +37,12 @@
   </script>
   
   <style scoped>
+  
 .sidebar {
-  width: 20%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background-color: #f0f0f0; /* Cambia el color de fondo según tus preferencias */
-  padding: 20px; /* Agrega un poco de espacio alrededor del contenido */
+  position: sticky;
+  width: 200px;
+  padding: 20px;
+  background-color: #fdfdfd;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Agrega una sombra sutil */
 }
 
@@ -45,6 +50,7 @@
   display: flex;
   align-items: center;
   margin-bottom: 10px; /* Agrega espacio entre cada etiqueta */
+  font: 1em sans-serif;
 }
 
 .tag-circle {

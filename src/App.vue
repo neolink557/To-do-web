@@ -1,35 +1,63 @@
 <template>
-  <div class="app-container">
-    <Header></Header>
-    <Home></Home>
-    <DD></DD>
+  <div class="app-layout">
+    <Header />
+    <div class="main-container">
+      <SideBar />
+      <Home />
+    </div>
   </div>
 </template>
 
 <script>
-// Importa los componentes utilizando la sintaxis de exportación por defecto
 import Header from '@/components/HeaderComponent.vue';
 import Home from '@/components/HomePage.vue';
-import DD from '@/components/DropdownComponent.vue';
+import SideBar from '@/components/SideBarComponent.vue';
 
 export default {
   components: {
     Home,
     Header,
-    DD
+    SideBar
   }
 }
 </script>
 
 <style scoped>
-.app-container {
+.app-layout {
+  
+  background-color: #f3f3f3;
   display: flex;
   flex-direction: column;
-  height: 100vh; /* Make the container take the full height of the viewport */
-  width: 100vw;  /* Make the container take the full width of the viewport */
-  margin: 0;
-  padding: 0;
-  background-color: #f9f9f9;
-  box-sizing: border-box;
+  height: 98.2vh;
+}
+
+.main-container {
+  display: flex;
+  flex: 1;
+  overflow-y: auto;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  background-color: white; /* Adjust this according to your design */
+}
+
+.sidebar {
+  min-width: 200px;
+  position: sticky;
+  top: 1px; /* Adjust this if your header has a different height */
+  height: calc(87vh - 1px); /* Adjust this if your header has a different height */
+  width: 200px;
+  padding: 20px;
+}
+
+.home {
+  flex-grow: 1;
+  padding: 20px;
+  margin-top: 60px; /* Adjust this if your header has a different height */
 }
 </style>

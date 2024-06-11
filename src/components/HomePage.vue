@@ -1,8 +1,5 @@
 <template>
     <div>
-      <!-- Your content here -->
-      
-      <!-- Display cards -->
       <div class="card-container">
         <div v-for="(CardComponent, index) in cards" :key="index" class="card-wrapper">
           <CardComponent />
@@ -81,7 +78,6 @@
     display: flex;
     flex-wrap: wrap;
     margin-top: 20px; /* Adjust spacing between rows */
-    background-color: #f9f9f9;
   }
   
   .card-wrapper {
