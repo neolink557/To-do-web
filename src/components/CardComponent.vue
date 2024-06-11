@@ -1,6 +1,6 @@
 <template>
   <div class="card" ref="card">
-    <div class="options-menu" v-if="isVisible" @click="toggleMenu">
+    <div class="options-menu" v-if="cardOptionsVisibility" @click="toggleMenu">
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>
@@ -14,7 +14,7 @@
 
     <div class="dropdown">
       <button @click="toggleDropdown" v-if="dropdownButtonVisible" class="dropdown-button">Select Tag</button>
-      <div ref="dropdown" class="dropdown-menu" v-show="dropdownVisible">
+      <div ref="dropdown" class="dropdown-menu" v-show="dropdownCardMenuVisibility">
         <div class="tag-list" ref="tagList">
           <div v-for="tag in tags" :key="tag.name" class="tag" @click="toggleTagSelection(tag)">
             <span :style="{ backgroundColor: tag.color }" class="tag-circle"></span>
@@ -72,10 +72,10 @@ export default {
     return {
       localCardData: { ...this.cardData, selectedTags: this.cardData.selectedTags || [] },
       newTagName: '',
-      dropdownVisible: false,
-      isVisible: false,
-      isEnabled: true,
       description: '',
+      dropdownCardMenuVisibility: false,
+      cardOptionsVisibility: false,
+      areCardInputsEnabled: true,
       dropdownButtonVisible: true,
       localTags: this.tags.slice(),
     };
@@ -88,23 +88,23 @@ export default {
       this.emitUpdate(); // Emit update when resizing textarea (description change)
     },
     toggleMenu() {
-      this.isEnabled = !this.isEnabled;
-      this.$refs.card.querySelector('.title-input').disabled = !this.isEnabled;
-      this.$refs.card.querySelector('.description-textarea').disabled = !this.isEnabled;
-      this.isVisible = this.$refs.card.querySelector('.title-input').disabled;
+      this.areCardInputsEnabled = !this.areCardInputsEnabled;
+      this.$refs.card.querySelector('.title-input').disabled = !this.areCardInputsEnabled;
+      this.$refs.card.querySelector('.description-textarea').disabled = !this.areCardInputsEnabled;
+      this.cardOptionsVisibility = this.$refs.card.querySelector('.title-input').disabled;
       this.dropdownButtonVisible = !this.localCardData.selectedTags.length > 0;
     },
     handleClickOutside(event) {
       if (this.$refs.card && !this.$refs.card.contains(event.target)) {
-        this.$refs.card.querySelector('.title-input').disabled = !this.isEnabled;
-        this.$refs.card.querySelector('.description-textarea').disabled = !this.isEnabled;
-        this.isEnabled = false;
-        this.isVisible = this.$refs.card.querySelector('.title-input').disabled;
-        this.dropdownVisible = false;
+        this.$refs.card.querySelector('.title-input').disabled = !this.areCardInputsEnabled;
+        this.$refs.card.querySelector('.description-textarea').disabled = !this.areCardInputsEnabled;
+        this.areCardInputsEnabled = false;
+        this.cardOptionsVisibility = this.$refs.card.querySelector('.title-input').disabled;
+        this.dropdownCardMenuVisibility = false;
       }
     },
     toggleDropdown() {
-        this.dropdownVisible = !this.dropdownVisible;
+        this.dropdownCardMenuVisibility = !this.dropdownCardMenuVisibility;
     },
     addTag() {
       if (this.newTagName.trim() !== '') {
