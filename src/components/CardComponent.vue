@@ -71,6 +71,9 @@ export default {
     },
     handleClickOutside(event) {
       if (this.$refs.card && !this.$refs.card.contains(event.target)) {
+        if (this.dropdownVisible) {
+          this.dropdownVisible = false;
+        }
         this.$refs.card.querySelector('.title-input').disabled = !this.isEnabled;
         this.$refs.card.querySelector('.description-textarea').disabled = !this.isEnabled;
         this.isEnabled = false
@@ -210,12 +213,22 @@ export default {
   position: absolute;
   top: 100%;
   left: 0;
-  background: white;
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1;
-  width: 100%;
+  margin: 10px;
+  z-index: 1000;
+  background-color: #fff;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
 }
+
+.dropdown-menu div {
+    padding: 15px;
+    cursor: pointer;
+    font: 1em sans-serif;
+  }
+
+  .dropdown-menu div:hover {
+    background-color: #f0f0f0;
+  }
 
 .selected-tags {
   display: flex;
