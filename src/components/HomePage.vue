@@ -1,60 +1,105 @@
 <template>
-    <div>
-      <div class="card-container">
-        <div v-for="(CardComponent, index) in cards" :key="index" class="card-wrapper">
-          <CardComponent />
-        </div>
-      </div>
-  
-      <!-- Floating Action Button -->
-      <div 
-        class="fab" 
-        @click="addCard" 
-        @mouseenter="handleMouseEnter" 
-        @mouseleave="handleMouseLeave" 
-        @mousedown="handleMouseDown" 
-        @mouseup="handleMouseUp" 
-        :style="{ backgroundColor: isClicked ? '#e55e5e' : (isHovered ? '#f29d9d' : '#FF7777') }">
-        <i class="fas fa-plus" style="user-select: none;">+</i>
+  <div>
+    <div class="card-container">
+      <div v-for="(card, index) in cards" :key="index" class="card-wrapper">
+        <CardComponent 
+          :cardData="card" 
+          :tags="tags" 
+          @update-card="updateCard(index, $event)" 
+          @delete-card="deleteCard(index)"
+          @add-tag="addTag"
+        />
       </div>
     </div>
-  </template>
-  
-  <script>
-  import CardComponent from './CardComponent.vue';
-  
-  export default {
-    components: {
-      CardComponent
-    },
-    data() {
-      return {
-        isHovered: false,
-        isClicked: false,
-        cards: []  // Array to store the state of the cards
-      };
-    },
-    methods: {
-      addCard() {
-        // Add a new card to the cards array
-        this.cards.push({});
-      },
-      handleMouseEnter() {
-        this.isHovered = true;
-      },
-      handleMouseLeave() {
-        this.isHovered = false;
-        this.isClicked = false;  // Ensure the color resets if the user drags the mouse out while clicking
-      },
-      handleMouseDown() {
-        this.isClicked = true;
-      },
-      handleMouseUp() {
-        this.isClicked = false;
+
+    <!-- Floating Action Button -->
+    <div 
+      class="fab" 
+      @click="addCard" 
+      @mouseenter="handleMouseEnter" 
+      @mouseleave="handleMouseLeave" 
+      @mousedown="handleMouseDown" 
+      @mouseup="handleMouseUp" 
+      :style="{ backgroundColor: isClicked ? '#e55e5e' : (isHovered ? '#f29d9d' : '#FF7777') }">
+      <i class="fas fa-plus" style="user-select: none;">+</i>
+    </div>
+  </div>
+</template>
+
+<script>
+import CardComponent from './CardComponent.vue';
+
+export default {
+  components: {
+    CardComponent
+  },
+  data() {
+    return {
+      isHovered: false,
+      isClicked: false,
+      cards: [],  // Array to store the state of the cards
+      tags: []  // Lista global de tags
+    };
+  },
+  methods: {
+    loadCards() {
+      const cardsFromStorage = localStorage.getItem('cards');
+      if (cardsFromStorage) {
+        this.cards = JSON.parse(cardsFromStorage);
+      } else {
+        this.cards = [];
       }
+    },
+    loadTags() {
+      const tagsFromStorage = localStorage.getItem('tags');
+      if (tagsFromStorage) {
+        this.tags = JSON.parse(tagsFromStorage);
+      } else {
+        this.tags = [];
+      }
+    },
+    saveCards() {
+      localStorage.setItem('cards', JSON.stringify(this.cards));
+    },
+    saveTags() {
+      localStorage.setItem('tags', JSON.stringify(this.tags));
+    },
+    addCard() {
+      this.cards.push({ title: '', description: '', tags: [], selectedTags: [] });
+      this.saveCards();
+    },
+    updateCard(index, updatedCard) {
+      this.cards.splice(index, 1, updatedCard);
+      this.saveCards();
+    },
+    deleteCard(index) {
+      this.cards.splice(index, 1);
+      this.saveCards();
+    },
+    addTag(newTag) {
+      this.tags.push(newTag);
+      this.saveTags();
+    },
+    handleMouseEnter() {
+      this.isHovered = true;
+    },
+    handleMouseLeave() {
+      this.isHovered = false;
+      this.isClicked = false;  // Ensure the color resets if the user drags the mouse out while clicking
+    },
+    handleMouseDown() {
+      this.isClicked = true;
+    },
+    handleMouseUp() {
+      this.isClicked = false;
     }
+  },
+  mounted() {
+    this.loadCards();
+    this.loadTags();
   }
-  </script>
+}
+</script>
   
   <style scoped>
   .fab {

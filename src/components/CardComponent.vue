@@ -7,13 +7,13 @@
     </div>
     <div class="menu" v-if="showMenu">
       <div @click="edit">Edit</div>
-      <div @click="deleteItem">Delete</div>
+      <div @click="$emit('delete-card')">Delete</div>
     </div>
-    <input type="text" placeholder="Place your title here" class="title-input">
-    <textarea placeholder="Add here your description" class="description-textarea" v-model="description" @input="resizeTextarea"></textarea>
+    <input type="text" placeholder="Place your title here" class="title-input" v-model="localCardData.title" @input="emitUpdate">
+    <textarea placeholder="Add here your description" class="description-textarea" v-model="localCardData.description" @input="resizeTextarea"></textarea>
 
     <div class="dropdown">
-      <button @click="toggleDropdown" v-if="dropdowButtonVisible" class="dropdown-button">Select Tag</button>
+      <button @click="toggleDropdown" v-if="dropdownButtonVisible" class="dropdown-button">Select Tag</button>
       <div ref="dropdown" class="dropdown-menu" v-show="dropdownVisible">
         <div class="tag-list" ref="tagList">
           <div v-for="tag in tags" :key="tag.name" class="tag" @click="toggleTagSelection(tag)">
@@ -31,7 +31,7 @@
     </div>
 
     <div class="selected-tags">
-      <div v-for="tag in selectedTags" :key="tag.name" class="tag" @click="toggleDropdown">
+      <div v-for="tag in localCardData.selectedTags" :key="tag.name" class="tag">
         <span :style="{ backgroundColor: tag.color }" class="tag-circle"></span>
       </div>
     </div>
@@ -51,16 +51,33 @@ class TagModel {
 
 export default {
   name: 'CardComponent',
+  props: {
+    cardData: {
+      type: Object,
+      required: true,
+      default: () => ({
+        title: '',
+        description: '',
+        tags: [],
+        selectedTags: []
+      })
+    },
+    tags: {
+      type: Array,
+      required: true,
+      default: () => []
+    }
+  },
   data() {
     return {
-      isEnabled: true,
-      isVisible: false,
-      description: '',
+      localCardData: { ...this.cardData, selectedTags: this.cardData.selectedTags || [] },
+      newTagName: '',
       dropdownVisible: false,
-      dropdowButtonVisible: true,
-      tags: [],
-      selectedTags: [],
-      newTagName: ''
+      isVisible: false,
+      isEnabled: true,
+      description: '',
+      dropdownButtonVisible: true,
+      localTags: this.tags.slice(),
     };
   },
   methods: {
@@ -68,13 +85,14 @@ export default {
       const textarea = event.target;
       textarea.style.height = 'auto';
       textarea.style.height = `${textarea.scrollHeight}px`;
+      this.emitUpdate(); // Emit update when resizing textarea (description change)
     },
     toggleMenu() {
       this.isEnabled = !this.isEnabled;
       this.$refs.card.querySelector('.title-input').disabled = !this.isEnabled;
       this.$refs.card.querySelector('.description-textarea').disabled = !this.isEnabled;
       this.isVisible = this.$refs.card.querySelector('.title-input').disabled;
-      this.dropdowButtonVisible = !this.selectedTags.length > 0;
+      this.dropdownButtonVisible = !this.localCardData.selectedTags.length > 0;
     },
     handleClickOutside(event) {
       if (this.$refs.card && !this.$refs.card.contains(event.target)) {
@@ -93,62 +111,67 @@ export default {
         const randomColor = chroma.random();
         const pastelColor = chroma.mix(randomColor, 'white', 0.7).hex();
         const newTag = new TagModel(this.newTagName, pastelColor);
-        this.tags.push(newTag);
+        this.$emit('add-tag', newTag);  // Emitimos un evento para agregar el tag
         this.newTagName = '';
-        localStorage.setItem('tags', JSON.stringify(this.tags)); // Save tags to localStorage
-        this.$nextTick(() => {
-          this.scrollToBottom();
-        });
+        this.localTags.push(newTag);
+        this.$emit('update-tags', this.localTags);
       }
-      this.dropdowButtonVisible = !this.selectedTags.length > 0;
+      this.dropdownButtonVisible = !this.localCardData.selectedTags.length > 0;
     },
     removeTag(tag) {
       const index = this.tags.indexOf(tag);
       if (index > -1) {
-        this.tags.splice(index, 1);
+        this.localTags.splice(index, 1);
       }
-      const indexSelected = this.selectedTags.indexOf(tag);
+      const indexSelected = this.localCardData.selectedTags.indexOf(tag);
       if (indexSelected > -1) {
-        this.selectedTags.splice(indexSelected, 1);
+        this.localCardData.selectedTags.splice(indexSelected, 1);
       }
-      localStorage.setItem('tags', JSON.stringify(this.tags)); // Save tags to localStorage
-      this.$nextTick(() => {
-        this.scrollToBottom();
-      });
-      this.dropdowButtonVisible = !this.selectedTags.length > 0;
+      this.$emit('update-tags', this.localTags);
+      this.dropdownButtonVisible = !this.localCardData.selectedTags.length > 0;
     },
     toggleTagSelection(tag) {
-      const index = this.selectedTags.indexOf(tag);
+      const index = this.localCardData.selectedTags.findIndex(t => t.name === tag.name);
       if (index > -1) {
-        this.selectedTags.splice(index, 1); // Deselect the tag
+        this.localCardData.selectedTags.splice(index, 1); // Deselect the tag
       } else {
-        this.selectedTags.push(tag); // Select the tag
+        this.localCardData.selectedTags.push(tag); // Select the tag
       }
-      this.dropdowButtonVisible = !this.tags.length > 0;
+      this.emitUpdate();
+      this.dropdownButtonVisible = !this.localCardData.selectedTags.length > 0;
+
     },
     isSelected(tag) {
-      return this.selectedTags.includes(tag);
+      return this.localCardData.selectedTags?.some(t => t.name === tag.name) || false;
+    },
+    emitUpdate() {
+      this.$emit('update-card', { ...this.localCardData });
+    }
+  },
+  watch: {
+    cardData: {
+      handler(newVal) {
+        this.localCardData = { ...newVal, selectedTags: newVal.selectedTags || [] };
+      },
+      deep: true
     },
     loadTags() {
       const tagsFromStorage = localStorage.getItem('tags');
       if (tagsFromStorage) {
-        this.tags = JSON.parse(tagsFromStorage);
+        const tags = JSON.parse(tagsFromStorage);
+        this.$emit('tags-loaded', tags); // Emitir evento para informar al padre sobre las etiquetas cargadas
       }
-    },
-    scrollToBottom() {
-      const tagList = this.$refs.tagList;
-      tagList.scrollTop = tagList.scrollHeight;
     },
   },
   mounted() {
     document.addEventListener('click', this.handleClickOutside);
-    this.loadTags();
   },
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside);
   }
 };
 </script>
+
 
 <style scoped>
 .card {
