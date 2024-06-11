@@ -1,18 +1,17 @@
-<!-- CardComponent.vue -->
 <template>
   <div class="card" ref="card">
-    <div class="options-menu" v-if="isVisible" @click="toggleMenu" >
+    <div class="options-menu" v-if="isVisible" @click="toggleMenu">
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>
     </div>
     <div class="menu" v-if="showMenu">
       <div @click="edit">Edit</div>
-      <div @click="deleteItem">Delete</div>
+      <div @click="$emit('delete-card')">Delete</div>
     </div>
-    <input type="text" placeholder="Place your title here" class="title-input">
-    <textarea placeholder="Add here your description" class="description-textarea" v-model="description" @input="resizeTextarea"></textarea>
-    
+    <input type="text" placeholder="Place your title here" class="title-input" v-model="localCardData.title" @input="emitUpdate">
+    <textarea placeholder="Add here your description" class="description-textarea" v-model="localCardData.description" @input="resizeTextarea"></textarea>
+
     <div class="dropdown">
       <button @click="toggleDropdown" class="dropdown-button">Select Tag</button>
       <div class="dropdown-menu" v-show="dropdownVisible">
@@ -25,9 +24,9 @@
         <button @click="addTag">Add Tag</button>
       </div>
     </div>
-    
+
     <div class="selected-tags">
-      <div v-for="tag in selectedTags" :key="tag.name" class="tag" @click="toggleDropdown">
+      <div v-for="tag in localCardData.selectedTags" :key="tag.name" class="tag">
         <span :style="{ backgroundColor: tag.color }" class="tag-circle"></span>
       </div>
     </div>
@@ -46,15 +45,30 @@ class TagModel {
 
 export default {
   name: 'CardComponent',
+  props: {
+    cardData: {
+      type: Object,
+      required: true,
+      default: () => ({
+        title: '',
+        description: '',
+        tags: [],
+        selectedTags: []
+      })
+    },
+    tags: {
+      type: Array,
+      required: true,
+      default: () => []
+    }
+  },
   data() {
     return {
-      isEnabled: true,
-      isVisible : false,
-      description: '',
+      localCardData: { ...this.cardData, selectedTags: this.cardData.selectedTags || [] },
+      newTagName: '',
       dropdownVisible: false,
-      tags: [],
-      selectedTags: [],
-      newTagName: ''
+      isVisible: false,
+      isEnabled: true
     };
   },
   methods: {
@@ -62,12 +76,13 @@ export default {
       const textarea = event.target;
       textarea.style.height = 'auto';
       textarea.style.height = `${textarea.scrollHeight}px`;
+      this.emitUpdate(); // Emit update when resizing textarea (description change)
     },
     toggleMenu() {
-      this.isEnabled = TextTrackCueList
+      this.isEnabled = !this.isEnabled;
       this.$refs.card.querySelector('.title-input').disabled = !this.isEnabled;
-        this.$refs.card.querySelector('.description-textarea').disabled = !this.isEnabled;
-      this.isVisible = this.$refs.card.querySelector('.title-input').disabled
+      this.$refs.card.querySelector('.description-textarea').disabled = !this.isEnabled;
+      this.isVisible = this.$refs.card.querySelector('.title-input').disabled;
     },
     handleClickOutside(event) {
       if (this.$refs.card && !this.$refs.card.contains(event.target)) {
@@ -76,8 +91,8 @@ export default {
         }
         this.$refs.card.querySelector('.title-input').disabled = !this.isEnabled;
         this.$refs.card.querySelector('.description-textarea').disabled = !this.isEnabled;
-        this.isEnabled = false
-        this.isVisible = this.$refs.card.querySelector('.title-input').disabled
+        this.isEnabled = false;
+        this.isVisible = this.$refs.card.querySelector('.title-input').disabled;
       }
     },
     toggleDropdown() {
@@ -88,38 +103,43 @@ export default {
         const randomColor = chroma.random();
         const pastelColor = chroma.mix(randomColor, 'white', 0.7).hex();
         const newTag = new TagModel(this.newTagName, pastelColor);
-        this.tags.push(newTag);
+        this.$emit('add-tag', newTag);  // Emitimos un evento para agregar el tag
         this.newTagName = '';
-        localStorage.setItem('tags', JSON.stringify(this.tags)); // Save tags to localStorage
       }
     },
     toggleTagSelection(tag) {
-      const index = this.selectedTags.indexOf(tag);
+      const index = this.localCardData.selectedTags.findIndex(t => t.name === tag.name);
       if (index > -1) {
-        this.selectedTags.splice(index, 1); // Deselect the tag
+        this.localCardData.selectedTags.splice(index, 1); // Deselect the tag
       } else {
-        this.selectedTags.push(tag); // Select the tag
+        this.localCardData.selectedTags.push(tag); // Select the tag
       }
+      this.emitUpdate();
     },
     isSelected(tag) {
-      return this.selectedTags.includes(tag);
+      return this.localCardData.selectedTags?.some(t => t.name === tag.name) || false;
     },
-    loadTags() {
-      const tagsFromStorage = localStorage.getItem('tags');
-      if (tagsFromStorage) {
-        this.tags = JSON.parse(tagsFromStorage);
-      }
+    emitUpdate() {
+      this.$emit('update-card', { ...this.localCardData });
+    }
+  },
+  watch: {
+    cardData: {
+      handler(newVal) {
+        this.localCardData = { ...newVal, selectedTags: newVal.selectedTags || [] };
+      },
+      deep: true
     }
   },
   mounted() {
     document.addEventListener('click', this.handleClickOutside);
-    this.loadTags();
   },
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside);
   }
 };
 </script>
+
 
 <style scoped>
 .card {
