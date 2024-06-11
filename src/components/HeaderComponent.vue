@@ -1,7 +1,7 @@
 <template>
     <header class="header" >
       <div class="header-content">
-        <div class="icon-container" @click="toggleMenu">
+        <div class="icon-container" @click="openSidebar">
           <transition name="fade" mode="out-in">
             <img
               v-if="!isMenuOpen"
@@ -36,19 +36,11 @@
         </div>
       </div>
     </header>
-    <div v-if="isMenuOpen">
-      <SideBarComponent />
-    </div>
   </template>
   
   <script>
 
-  import SideBarComponent from './SideBarComponent.vue';
-
   export default {
-    components: {
-      SideBarComponent
-    },
     data() {
       return {
         searchQuery: "",
@@ -60,9 +52,10 @@
         // Handle search logic here
         console.log(this.searchQuery);
       },
-      toggleMenu() {
-        this.isMenuOpen = !this.isMenuOpen;
-      },
+      openSidebar() {
+        this.isMenuOpen = !this.isMenuOpen
+        this.emitter.emit('toggle-sidebar', this.isMenuOpen);
+    }
     },
   };
   </script>
@@ -78,13 +71,18 @@
   }
   
   .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 60px;
-    background-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
+    webkit-user-select: none; /* Chrome, Safari, and Opera */
+            -moz-user-select: none;    /* Firefox */
+            -ms-user-select: none;     /* Internet Explorer and Edge */
+            user-select: none;      
+    font: 1em sans-serif;
+  position: sticky; /* Position the header fixed */
+  top: 0; /* Stick it to the top */
+  width: 100%; /* Full width */
+  background-color: #fff; /* Example background color */
+  z-index: 1000; /* Ensure it's on top of other content */
+  box-shadow: 0 4px 8px rgrgba(0, 0, 0, 0.3)/* Example box shadow */
+}
   
   .header-content {
     display: flex;
