@@ -14,7 +14,7 @@
     data() {
       return {
         tags: [],
-        isOpen: false
+        isOpen: true
       };
     },
     created() {

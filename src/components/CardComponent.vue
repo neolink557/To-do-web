@@ -1,7 +1,6 @@
-<!-- CardComponent.vue -->
 <template>
   <div class="card" ref="card">
-    <div class="options-menu" v-if="isVisible" @click="toggleMenu" >
+    <div class="options-menu" v-if="isVisible" @click="toggleMenu">
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>
@@ -12,20 +11,24 @@
     </div>
     <input type="text" placeholder="Place your title here" class="title-input">
     <textarea placeholder="Add here your description" class="description-textarea" v-model="description" @input="resizeTextarea"></textarea>
-    
+
     <div class="dropdown">
-      <button @click="toggleDropdown" class="dropdown-button">Select Tag</button>
-      <div class="dropdown-menu" v-show="dropdownVisible">
-        <div v-for="tag in tags" :key="tag.name" class="tag" @click="toggleTagSelection(tag)">
-          <span :style="{ backgroundColor: tag.color }" class="tag-circle"></span>
-          {{ tag.name }}
-          <span v-if="isSelected(tag)" class="selected-indicator">✓</span>
+      <button @click="toggleDropdown" v-if="dropdowButtonVisible" class="dropdown-button">Select Tag</button>
+      <div ref="dropdown" class="dropdown-menu" v-show="dropdownVisible">
+        <div class="tag-list" ref="tagList">
+          <div v-for="tag in tags" :key="tag.name" class="tag" @click="toggleTagSelection(tag)">
+            <span :style="{ backgroundColor: tag.color }" class="tag-circle"></span>
+            {{ tag.name }}
+            <span v-if="isSelected(tag)" class="selected-indicator">✓</span>
+          </div>
         </div>
-        <input type="text" v-model="newTagName" placeholder="New tag name">
-        <button @click="addTag">Add Tag</button>
+        <div class="tag-input">
+          <input type="text" v-model="newTagName" placeholder="New tag name">
+          <button @click="addTag">Add Tag</button>
+        </div>
       </div>
     </div>
-    
+
     <div class="selected-tags">
       <div v-for="tag in selectedTags" :key="tag.name" class="tag" @click="toggleDropdown">
         <span :style="{ backgroundColor: tag.color }" class="tag-circle"></span>
@@ -49,9 +52,10 @@ export default {
   data() {
     return {
       isEnabled: true,
-      isVisible : false,
+      isVisible: false,
       description: '',
       dropdownVisible: false,
+      dropdowButtonVisible: true,
       tags: [],
       selectedTags: [],
       newTagName: ''
@@ -66,22 +70,22 @@ export default {
     toggleMenu() {
       this.isEnabled = TextTrackCueList
       this.$refs.card.querySelector('.title-input').disabled = !this.isEnabled;
-        this.$refs.card.querySelector('.description-textarea').disabled = !this.isEnabled;
-      this.isVisible = this.$refs.card.querySelector('.title-input').disabled
+      this.$refs.card.querySelector('.description-textarea').disabled = !this.isEnabled;
+      this.isVisible = this.$refs.card.querySelector('.title-input').disabled;
     },
     handleClickOutside(event) {
       if (this.$refs.card && !this.$refs.card.contains(event.target)) {
-        if (this.dropdownVisible) {
-          this.dropdownVisible = false;
-        }
         this.$refs.card.querySelector('.title-input').disabled = !this.isEnabled;
         this.$refs.card.querySelector('.description-textarea').disabled = !this.isEnabled;
         this.isEnabled = false
         this.isVisible = this.$refs.card.querySelector('.title-input').disabled
+        this.dropdownVisible = false
       }
     },
     toggleDropdown() {
-      this.dropdownVisible = !this.dropdownVisible;
+      if (!this.isVisible) {
+        this.dropdownVisible = !this.dropdownVisible;
+      }
     },
     addTag() {
       if (this.newTagName.trim() !== '') {
@@ -91,7 +95,11 @@ export default {
         this.tags.push(newTag);
         this.newTagName = '';
         localStorage.setItem('tags', JSON.stringify(this.tags)); // Save tags to localStorage
+        this.$nextTick(() => {
+          this.scrollToBottom();
+        });
       }
+      this.dropdowButtonVisible = !this.selectedTags.length > 0
     },
     toggleTagSelection(tag) {
       const index = this.selectedTags.indexOf(tag);
@@ -100,6 +108,7 @@ export default {
       } else {
         this.selectedTags.push(tag); // Select the tag
       }
+      this.dropdowButtonVisible = !this.selectedTags.length > 0
     },
     isSelected(tag) {
       return this.selectedTags.includes(tag);
@@ -109,7 +118,11 @@ export default {
       if (tagsFromStorage) {
         this.tags = JSON.parse(tagsFromStorage);
       }
-    }
+    },
+    scrollToBottom() {
+      const tagList = this.$refs.tagList;
+      tagList.scrollTop = tagList.scrollHeight;
+    },
   },
   mounted() {
     document.addEventListener('click', this.handleClickOutside);
@@ -138,8 +151,8 @@ export default {
 .options-menu {
   display: flex;
   position: absolute;
-  top: 15%;
-  right: 3%;
+  top: 25px;
+  right: 25px;
   cursor: pointer;
 }
 
@@ -202,8 +215,9 @@ export default {
 
 .dropdown-button {
   padding: 8px;
-  background: #007bff;
-  color: white;
+  background: none;
+  border-bottom: #9d9d9d;
+  color: #9d9d9d;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -215,20 +229,49 @@ export default {
   left: 0;
   margin: 10px;
   z-index: 1000;
-  background-color: #fff;
+  background-color: #ffffff;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  max-height: 350px; /* Set a max-height */
+  overflow: hidden; /* Ensure the content is hidden when scrolling */
 }
 
-.dropdown-menu div {
-    padding: 15px;
-    cursor: pointer;
-    font: 1em sans-serif;
-  }
+.tag-list {
+  flex-grow: 1; /* Allow the tag list to grow and fill the available space */
+  overflow-y: auto; /* Make the tag list scrollable */
+  padding: 10px; /* Add some padding */
+}
 
-  .dropdown-menu div:hover {
-    background-color: #f0f0f0;
-  }
+.tag-input {
+  display: flex; /* Align button and input horizontally */
+  align-items: center; /* Center items vertically */
+  padding: 10px;
+  background-color: #fff;
+  border-top: 1px solid #ccc; /* Add divider */
+}
+
+.tag-input input {
+  flex: 1; /* Take up remaining space */
+  border: none; /* Remove border */
+  font: 1em sans-serif;
+  outline: none; /* Remove focus border */
+}
+
+.tag-input input:focus {
+  border: none; /* Remove focus border */
+}
+
+.tag-input button {
+  margin-left: 10px; /* Add margin between input and button */
+  padding: 8px;
+  background: none;
+  color: #9d9d9d;
+  border: none; /* Remove border */
+  border-radius: 4px;
+  cursor: pointer;
+}
 
 .selected-tags {
   display: flex;
@@ -239,6 +282,8 @@ export default {
 .tag {
   display: flex;
   align-items: center;
+  padding-top: 10px;
+  font: 1em sans-serif;
 }
 
 .tag-circle {
@@ -253,6 +298,7 @@ export default {
   color: green;
   font-weight: bold;
 }
+
 .title-input:disabled,
 .description-textarea:disabled {
   background-color: transparent; /* Set background to transparent */
@@ -262,6 +308,6 @@ export default {
   -webkit-user-select: none; /* Disable user selection for webkit browsers */
   -moz-user-select: none; /* Disable user selection for Firefox */
   -ms-user-select: none; /* Disable user selection for IE/Edge */
-  pointer-events: none; 
+  pointer-events: none;
 }
 </style>
